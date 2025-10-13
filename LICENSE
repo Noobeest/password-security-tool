@@ -1,0 +1,414 @@
+MIT License
+
+Copyright (c) 2024 Your Name
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## Quick Start Guide
+
+1. **Create the project structure:**
+```bash
+mkdir -p password-security-tool/src
+cd password-security-tool
+```
+
+2. **Create all the files:**
+   - Copy each file content from above into respective files
+   - Make sure `src/__init__.py` is created first
+   - Save `main.py` in the root directory
+
+3. **Run the application:**
+```bash
+python main.py
+```
+
+4. **Test the modules individually:**
+```python
+# Test password checker
+from src import PasswordStrengthChecker
+
+checker = PasswordStrengthChecker()
+result = checker.check_strength("MyP@ssw0rd2024")
+print(f"Strength: {result.strength.name}")
+print(f"Score: {result.score}/10")
+print(f"Entropy: {result.entropy} bits")
+print(f"Time to crack: {result.time_to_crack}")
+
+# Test password generator
+from src import PasswordGenerator
+
+generator = PasswordGenerator()
+password = generator.generate(length=16, use_symbols=True)
+print(f"Generated password: {password}")
+
+passphrase = generator.generate_passphrase(word_count=5, capitalize=True)
+print(f"Generated passphrase: {passphrase}")
+```
+
+---
+
+## API Reference
+
+### PasswordStrengthChecker
+
+```python
+checker = PasswordStrengthChecker()
+analysis = checker.check_strength(password: str) -> PasswordAnalysis
+```
+
+**Methods:**
+- `check_strength(password)` - Analyze password and return detailed results
+
+**Returns:** `PasswordAnalysis` object with:
+- `strength` - StrengthLevel enum (VERY_WEAK to VERY_STRONG)
+- `score` - Integer score (0-10+)
+- `entropy` - Float entropy in bits
+- `feedback` - List of improvement suggestions
+- `time_to_crack` - String estimate of crack time
+
+### PasswordGenerator
+
+```python
+generator = PasswordGenerator()
+```
+
+**Methods:**
+
+1. **generate(length, use_lowercase, use_uppercase, use_digits, use_symbols)**
+   - Generate a random password
+   - Returns: `str`
+
+2. **generate_passphrase(word_count, separator, capitalize)**
+   - Generate memorable passphrase
+   - Returns: `str`
+
+3. **generate_pin(length)**
+   - Generate numeric PIN
+   - Returns: `str`
+
+4. **generate_multiple(count, length, **kwargs)**
+   - Generate multiple passwords
+   - Returns: `List[str]`
+
+### PasswordSecurityTool
+
+```python
+tool = PasswordSecurityTool()
+```
+
+**Methods:**
+
+1. **analyze_password(password, display=True)**
+   - Analyze and optionally display results
+   - Returns: `PasswordAnalysis`
+
+2. **generate_password_interactive()**
+   - Interactive password generation
+   - Returns: `str`
+
+3. **display_menu()**
+   - Show interactive CLI menu
+
+4. **display_security_tips()**
+   - Show security best practices
+
+---
+
+## Advanced Usage Examples
+
+### Batch Password Analysis
+
+```python
+from src import PasswordSecurityTool
+
+tool = PasswordSecurityTool()
+
+passwords_to_test = [
+    "password123",
+    "MyP@ssw0rd2024",
+    "Tr0ub4dor&3",
+    "correct-horse-battery-staple"
+]
+
+for pwd in passwords_to_test:
+    analysis = tool.analyze_password(pwd, display=False)
+    print(f"Password: {pwd}")
+    print(f"  Strength: {analysis.strength.name}")
+    print(f"  Entropy: {analysis.entropy} bits")
+    print(f"  Time to crack: {analysis.time_to_crack}")
+    print()
+```
+
+### Custom Password Generation
+
+```python
+from src import PasswordGenerator
+
+generator = PasswordGenerator()
+
+# Generate password without symbols (for systems that don't accept them)
+pwd = generator.generate(
+    length=20,
+    use_lowercase=True,
+    use_uppercase=True,
+    use_digits=True,
+    use_symbols=False
+)
+
+# Generate 10 different passphrases
+passphrases = [
+    generator.generate_passphrase(word_count=4) 
+    for _ in range(10)
+]
+
+# Generate strong passwords for different accounts
+passwords = {
+    'email': generator.generate(length=16, use_symbols=True),
+    'bank': generator.generate(length=20, use_symbols=True),
+    'social': generator.generate(length=14, use_symbols=False),
+}
+```
+
+### Integration Example
+
+```python
+from src import PasswordSecurityTool, StrengthLevel
+
+def create_account(username: str, password: str) -> bool:
+    """
+    Example function showing how to integrate password checking
+    into an account creation system.
+    """
+    tool = PasswordSecurityTool()
+    analysis = tool.analyze_password(password, display=False)
+    
+    # Require at least GOOD strength
+    if analysis.strength.value < StrengthLevel.GOOD.value:
+        print(f"Password too weak. Current strength: {analysis.strength.name}")
+        print("Suggestions:")
+        for feedback in analysis.feedback:
+            print(f"  - {feedback}")
+        return False
+    
+    # Password is strong enough
+    print(f"Account created for {username}")
+    print(f"Password strength: {analysis.strength.name}")
+    return True
+
+# Usage
+create_account("john_doe", "weak123")  # Will fail
+create_account("john_doe", "MyStr0ng!P@ssw0rd2024")  # Will succeed
+```
+
+---
+
+## Testing
+
+### Manual Testing
+
+```bash
+# Run the interactive tool
+python main.py
+
+# Test each option:
+# 1. Check these passwords:
+#    - "password" (should be VERY_WEAK)
+#    - "Password123" (should be FAIR)
+#    - "MyP@ssw0rd2024!" (should be STRONG)
+#
+# 2. Generate passwords with different options
+# 3. Generate passphrases
+# 4. Review security tips
+```
+
+### Unit Testing (Optional)
+
+Create a `tests/` directory with test files:
+
+```python
+# tests/test_checker.py
+import unittest
+from src import PasswordStrengthChecker, StrengthLevel
+
+class TestPasswordChecker(unittest.TestCase):
+    def setUp(self):
+        self.checker = PasswordStrengthChecker()
+    
+    def test_empty_password(self):
+        result = self.checker.check_strength("")
+        self.assertEqual(result.strength, StrengthLevel.VERY_WEAK)
+    
+    def test_weak_password(self):
+        result = self.checker.check_strength("password")
+        self.assertEqual(result.strength, StrengthLevel.VERY_WEAK)
+    
+    def test_strong_password(self):
+        result = self.checker.check_strength("MyStr0ng!P@ssw0rd2024")
+        self.assertIn(result.strength, [
+            StrengthLevel.STRONG,
+            StrengthLevel.VERY_STRONG
+        ])
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+---
+
+## Deployment
+
+### As a Standalone Script
+
+```bash
+# Make main.py executable
+chmod +x main.py
+
+# Run directly
+./main.py
+```
+
+### As a Python Package
+
+```bash
+# Install locally
+pip install -e .
+
+# Use in other projects
+from password_security_tool import PasswordSecurityTool
+```
+
+### Create Executable (PyInstaller)
+
+```bash
+# Install PyInstaller
+pip install pyinstaller
+
+# Create executable
+pyinstaller --onefile main.py
+
+# Executable will be in dist/main
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue:** `ModuleNotFoundError: No module named 'src'`
+- **Solution:** Make sure you're running from the project root directory and `src/__init__.py` exists
+
+**Issue:** Password generation fails
+- **Solution:** Ensure at least one character type is selected
+
+**Issue:** Import errors
+- **Solution:** Check that all files are in the correct directory structure
+
+---
+
+## Future Enhancements
+
+Potential features to add:
+
+1. **Password History**
+   - Store previously generated passwords
+   - Check against password history
+
+2. **Breach Database Integration**
+   - Check passwords against Have I Been Pwned API
+   - Warn if password appears in known breaches
+
+3. **Configuration File**
+   - Save user preferences
+   - Custom word lists for passphrases
+
+4. **GUI Version**
+   - Tkinter or PyQt interface
+   - Visual strength meter
+
+5. **Export Features**
+   - Save passwords to encrypted file
+   - Export to password manager format
+
+6. **Multi-language Support**
+   - Internationalization
+   - Localized security tips
+
+---
+
+## Performance Notes
+
+- Password checking: O(n) where n is password length
+- Generation: O(1) - constant time
+- Memory usage: Minimal (<1MB)
+- No network calls required
+
+---
+
+## Security Best Practices
+
+This tool follows:
+- **NIST SP 800-63B** - Digital Identity Guidelines
+- **OWASP** - Password Security Guidelines
+- **Shannon Entropy** - Information theory for strength calculation
+
+---
+
+## Contributing Guidelines
+
+1. Fork the repository
+2. Create a feature branch
+3. Follow PEP 8 style guidelines
+4. Add docstrings to all functions
+5. Include type hints
+6. Test your changes
+7. Submit a pull request
+
+---
+
+## Changelog
+
+### Version 1.0.0 (2024)
+- Initial release
+- Password strength checker
+- Secure password generator
+- Passphrase generation
+- Interactive CLI
+- Comprehensive documentation
+
+---
+
+## Support
+
+For issues, questions, or contributions:
+- GitHub Issues: https://github.com/noobest/password-security-tool/issues
+- Email: siddiqueemtiaz@gmail.com
+
+---
+
+## Disclaimer
+
+This tool is for educational and personal use. While it implements security best practices, always use established password managers for production environments.
+
+---
+
+**Happy Secure Password Generation! 🔐**

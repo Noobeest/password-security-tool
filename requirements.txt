@@ -1,0 +1,15 @@
+# No external dependencies required!
+# This project uses only Python standard library modules:
+# - secrets (for cryptographic randomness)
+# - string (for character sets)
+# - re (for pattern matching)
+# - math (for entropy calculations)
+# - dataclasses (for data models)
+# - enum (for enumerations)
+# - typing (for type hints)
+
+# For development/testing (optional):
+# pytest>=7.0.0
+# black>=22.0.0
+# mypy>=0.950
+```
