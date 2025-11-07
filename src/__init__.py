@@ -1,6 +1,6 @@
 """
 Password Security Tool Package
-A professional password strength checker and generator.
+A professional password strength checker generator.
 """
 
 __version__ = "1.0.0"
